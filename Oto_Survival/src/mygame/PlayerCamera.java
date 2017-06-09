@@ -1,8 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mygame.cameranode;
+package mygame;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
@@ -17,16 +18,11 @@ import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.CameraControl;
 
-
-    
 /**
  *
- * @author Abutua
- * 
- * 
- * Ver: https://wiki.jmonkeyengine.org/doku.php/jme3:advanced:making_the_camera_follow_a_character
+ * @author Giovanni
  */
-public class PlayerCameraNode extends Node {
+public class PlayerCamera extends Node {
     
     private final BetterCharacterControl physicsCharacter;
     private final AnimControl animationControl;
@@ -35,14 +31,14 @@ public class PlayerCameraNode extends Node {
     private Vector3f viewDirection = new Vector3f(0, 0, 0);
     private float airTime;
 
-    public PlayerCameraNode(String name,AssetManager assetManager, BulletAppState bulletAppState, Camera cam) {
+    public PlayerCamera(String name,AssetManager assetManager, BulletAppState bulletAppState, Camera cam) {
         super(name);
         
     
   
         Node oto = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        oto.setLocalTranslation(0, 5, 0);
-        scale(0.25f);
+        oto.setLocalTranslation(-900, 0, 0);
+        scale(0.03f);
         setLocalTranslation(0, 5, 0);
         attachChild(oto);
         
@@ -58,7 +54,10 @@ public class PlayerCameraNode extends Node {
         
         CameraNode camNode = new CameraNode("CamNode", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-        camNode.setLocalTranslation(new Vector3f(-90, 40,0));
+        camNode.setLocalTranslation(new Vector3f(-1000, 40,0));
+        
+        Quaternion rotateD = new Quaternion().fromAngleAxis(100 , Vector3f.UNIT_X);
+        camNode.setLocalRotation(rotateD);
         camNode.lookAt(this.getLocalTranslation(), Vector3f.UNIT_Y);
         
         
@@ -98,7 +97,7 @@ public class PlayerCameraNode extends Node {
                     animationChannel.setAnim("stand");
                 }
             } else if (!"Walk".equals(animationChannel.getAnimationName())) {
-                animationChannel.setAnim("Walk", 0.7f);
+                animationChannel.setAnim("Walk", 1f);
             }
         }
 
@@ -114,28 +113,26 @@ public class PlayerCameraNode extends Node {
             
         walkDirection.addLocal(camDir.mult(0));
         
-        if (up) {
+       /* if (up) {
             walkDirection.addLocal(camDir.mult(6));
         } else if (down) {
-            walkDirection.addLocal(camDir.mult(6).negate());//aqui para o oto
-        }
+            walkDirection.addLocal(camDir.mult(6).negate());
+        }*/
 
         if (left) {
-            Quaternion rotateL = new Quaternion().fromAngleAxis(FastMath.PI * tpf, Vector3f.UNIT_Y);
-            rotateL.multLocal(viewDirection);
-        } else if (right) {
-            Quaternion rotateR = new Quaternion().fromAngleAxis(-FastMath.PI * tpf, Vector3f.UNIT_Y);
-            rotateR.multLocal(viewDirection);
-        }
-        
+                if(getWorldTranslation().x < 5)
+                    walkDirection.addLocal(camDir.mult(5));
+                    //System.out.println(getWorldTranslation());
+            } else if (right) {
+                if(getWorldTranslation().x > -5)
+                    walkDirection.addLocal(camDir.mult(-5));
+                    //System.out.println(getWorldTranslation());
+            }
+            
+              
         physicsCharacter.setWalkDirection(walkDirection);
         physicsCharacter.setViewDirection(viewDirection);
  
         upDateAnimationPlayer();
     }
-    
-    
-    
-        
-   
 }

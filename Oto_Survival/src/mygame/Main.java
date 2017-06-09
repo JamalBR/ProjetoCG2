@@ -1,4 +1,9 @@
-package mygame.cameranode;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package mygame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ZipLocator;
@@ -7,9 +12,11 @@ import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -19,25 +26,24 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import java.util.Random;
 
-//To use the example assets in a new jMonkeyPlatform project, right-click your project, select "Properties", go to "Libraries", press "Add Library" and add the "jme3-test-data" library.
 /**
- * test
  *
- * @author normenhansen
+ * @author Giovanni Garcia Ribeiro de Souza e Marício Luís de Lorenzi
  */
-public class Exemplo10BetterComPlayerCameraNode
+public class Main
         extends SimpleApplication
         implements ActionListener, PhysicsCollisionListener {
 
     public static void main(String[] args) {
-        Exemplo10BetterComPlayerCameraNode app = new Exemplo10BetterComPlayerCameraNode();
+        Main app = new Main();
         app.showSettings = false;
         app.start();
     }
     private BulletAppState bulletAppState;
-    private PlayerCameraNode player;
+    private PlayerCamera player;
     private boolean up = false, down = false, left = false, right = false;
     private Material boxMatColosion;
     
@@ -52,11 +58,6 @@ public class Exemplo10BetterComPlayerCameraNode
         createCity();
         
         
-        Random r = new Random();
-        for(int i=0; i < 10; i++){
-            createCubo(r.nextInt(32), 3, r.nextInt(32));
-        }
-        
         boxMatColosion = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md"); 
         boxMatColosion.setBoolean("UseMaterialColors", true);
         boxMatColosion.setColor("Ambient", ColorRGBA.Red);
@@ -64,9 +65,10 @@ public class Exemplo10BetterComPlayerCameraNode
         
         
         createPlayer();
+        createCubo();
         initKeys();
 
-        bulletAppState.setDebugEnabled(false);
+       // bulletAppState.setDebugEnabled(false);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
     }
 
@@ -84,7 +86,7 @@ public class Exemplo10BetterComPlayerCameraNode
 
     private void createPlayer() {
 
-        player = new PlayerCameraNode("player", assetManager, bulletAppState, cam);
+        player = new PlayerCamera("player", assetManager, bulletAppState, cam);
         rootNode.attachChild(player);
         flyCam.setEnabled(false);
 
@@ -108,26 +110,10 @@ public class Exemplo10BetterComPlayerCameraNode
                 }
                 break;
         }
-        switch (binding) {
-            case "CharForward":
-                if (value) {
-                    up = true;
-                } else {
-                    up = false;
-                }
-                break;
-            case "CharBackward":
-                if (value) {
-                    down = true;
-                } else {
-                    down = false;
-                }
-                break;
+        if (binding.equals("Tiro")) {
+            createTiro();
         }
-
-
-
-
+            
     }
 
     private void createLigth() {
@@ -148,15 +134,12 @@ public class Exemplo10BetterComPlayerCameraNode
         l4.setDirection(new Vector3f(0, 0, 1.0f));
         rootNode.addLight(l4);
 
-
         AmbientLight ambient = new AmbientLight();
         ambient.setColor(ColorRGBA.White);
         rootNode.addLight(ambient);
-
-
     }
 
-    private void createCubo(float x, float y, float z) {
+    private void createCubo() {
         /* A colored lit cube. Needs light source! */
         Box boxMesh = new Box(1f, 1f, 1f);
         Geometry boxGeo = new Geometry("Box", boxMesh);
@@ -165,15 +148,31 @@ public class Exemplo10BetterComPlayerCameraNode
         boxMat.setColor("Ambient", ColorRGBA.Green);
         boxMat.setColor("Diffuse", ColorRGBA.Green);
         boxGeo.setMaterial(boxMat);
-        boxGeo.setLocalTranslation(x,y,z);
+        boxGeo.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 4f),(player.getLocalTranslation().z ));
         rootNode.attachChild(boxGeo);
         
 
 
-        RigidBodyControl boxPhysicsNode = new RigidBodyControl(1);
+        RigidBodyControl boxPhysicsNode = new RigidBodyControl(0);
         boxGeo.addControl(boxPhysicsNode);
         bulletAppState.getPhysicsSpace().add(boxPhysicsNode);
 
+    }
+    
+    private void createTiro() {
+        Sphere sphere = new Sphere(10, 10, 0.03f);
+        Geometry tiro = new Geometry("Tiro", sphere);
+        Material tiro_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        tiro_mat.setColor("Color", ColorRGBA.Red);
+        tiro.setMaterial(tiro_mat);
+        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z ));
+        rootNode.attachChild(tiro);
+        
+        RigidBodyControl tiroPhysicsNode = new RigidBodyControl(1);
+        tiro.addControl(tiroPhysicsNode);
+        bulletAppState.getPhysicsSpace().add(tiroPhysicsNode);
+        tiroPhysicsNode.setLinearVelocity(new Vector3f(0f,20,0f));
+        
     }
 
     private void createCity() {
@@ -190,11 +189,12 @@ public class Exemplo10BetterComPlayerCameraNode
     private void initKeys() {
         inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("CharForward", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
+       
 
         inputManager.addListener(this, "CharLeft", "CharRight");
-        inputManager.addListener(this, "CharForward", "CharBackward");
+        inputManager.addListener(this, "Tiro", "CharBackward");
 
     }
 /* A colored lit cube. Needs light source! */ 
@@ -203,7 +203,7 @@ public class Exemplo10BetterComPlayerCameraNode
     @Override
     public void collision(PhysicsCollisionEvent event) {
 
-        if(event.getNodeA().getName().equals("player") || event.getNodeA().getName().equals("player")){
+        if(event.getNodeA().getName().equals("Tiro") || event.getNodeA().getName().equals("Tiro")){
         
             if(event.getNodeA().getName().equals("Box")){
                   Spatial s = event.getNodeA();
