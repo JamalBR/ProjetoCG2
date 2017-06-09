@@ -155,16 +155,16 @@ public class Main
         rootNode.attachChild(camNode);
     }
 
-    private void createCubo() {
+    private void createCubo(float x, float y, float z) {
         /* A colored lit cube. Needs light source! */
-        Box boxMesh = new Box(1f, 1f, 1f);
+        Box boxMesh = new Box(0.1f, 0.1f, 0.1f);
         Geometry boxGeo = new Geometry("Box", boxMesh);
         Material boxMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         boxMat.setBoolean("UseMaterialColors", true);
         boxMat.setColor("Ambient", ColorRGBA.Green);
         boxMat.setColor("Diffuse", ColorRGBA.Green);
         boxGeo.setMaterial(boxMat);
-        boxGeo.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 4f),(player.getLocalTranslation().z ));
+        boxGeo.setLocalTranslation(x,y,z);
         rootNode.attachChild(boxGeo);
         
 
@@ -181,7 +181,7 @@ public class Main
         Material tiro_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         tiro_mat.setColor("Color", ColorRGBA.Red);
         tiro.setMaterial(tiro_mat);
-        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z ));
+        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z + 0.4f ));
         rootNode.attachChild(tiro);
         
         RigidBodyControl tiroPhysicsNode = new RigidBodyControl(1);

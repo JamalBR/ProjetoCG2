@@ -39,7 +39,7 @@ public class PlayerCamera extends Node {
         Node oto = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         oto.setLocalTranslation(-900, 0, 0);
         scale(0.03f);
-        setLocalTranslation(0, 0, 0);
+        setLocalTranslation(0, -5, 0);
         attachChild(oto);
         
         
@@ -118,11 +118,11 @@ public class PlayerCamera extends Node {
 
         if (left) {
                 if(getWorldTranslation().x < 5)
-                    walkDirection.addLocal(camDir.mult(5));
+                    walkDirection.addLocal(camDir.mult(2));
                     //System.out.println(getWorldTranslation());
             } else if (right) {
                 if(getWorldTranslation().x > -5)
-                    walkDirection.addLocal(camDir.mult(-5));
+                    walkDirection.addLocal(camDir.mult(-2));
                     //System.out.println(getWorldTranslation());
             }
             
