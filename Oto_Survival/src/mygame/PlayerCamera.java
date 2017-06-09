@@ -39,7 +39,7 @@ public class PlayerCamera extends Node {
         Node oto = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         oto.setLocalTranslation(-900, 0, 0);
         scale(0.03f);
-        setLocalTranslation(0, 5, 0);
+        setLocalTranslation(0, 0, 0);
         attachChild(oto);
         
         
@@ -52,16 +52,13 @@ public class PlayerCamera extends Node {
         animationChannel = animationControl.createChannel();
 
         
-        CameraNode camNode = new CameraNode("CamNode", cam);
+        /*CameraNode camNode = new CameraNode("CamNode", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
         camNode.setLocalTranslation(new Vector3f(-1000, 40,0));
-        
-        Quaternion rotateD = new Quaternion().fromAngleAxis(100 , Vector3f.UNIT_X);
-        camNode.setLocalRotation(rotateD);
         camNode.lookAt(this.getLocalTranslation(), Vector3f.UNIT_Y);
         
         
-        this.attachChild(camNode);
+        this.attachChild(camNode);*/
 
 
    }

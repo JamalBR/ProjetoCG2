@@ -7,6 +7,7 @@ package mygame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ZipLocator;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -23,8 +24,10 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import java.util.Random;
@@ -46,6 +49,7 @@ public class Main
     private PlayerCamera player;
     private boolean up = false, down = false, left = false, right = false;
     private Material boxMatColosion;
+    AudioNode somTiro;
     
     
     @Override
@@ -63,9 +67,10 @@ public class Main
         boxMatColosion.setColor("Ambient", ColorRGBA.Red);
         boxMatColosion.setColor("Diffuse", ColorRGBA.Red); 
         
-        
+        ajustaCamera();
         createPlayer();
-        createCubo();
+        //createCubo();
+        initAudio();
         initKeys();
 
        // bulletAppState.setDebugEnabled(false);
@@ -112,6 +117,7 @@ public class Main
         }
         if (binding.equals("Tiro")) {
             createTiro();
+            somTiro.playInstance();
         }
             
     }
@@ -137,6 +143,16 @@ public class Main
         AmbientLight ambient = new AmbientLight();
         ambient.setColor(ColorRGBA.White);
         rootNode.addLight(ambient);
+    }
+    
+    private void ajustaCamera(){
+        CameraNode camNode = new CameraNode("CamNode", cam);
+        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+        camNode.setLocalTranslation(new Vector3f(-30, -4.5f,0));
+        camNode.lookAt(rootNode.getLocalTranslation(), Vector3f.UNIT_Y);
+        
+        
+        rootNode.attachChild(camNode);
     }
 
     private void createCubo() {
@@ -196,6 +212,10 @@ public class Main
         inputManager.addListener(this, "CharLeft", "CharRight");
         inputManager.addListener(this, "Tiro", "CharBackward");
 
+    }
+    
+    private void initAudio(){
+        somTiro = new AudioNode(assetManager, "Sound/Effects/Gun.wav", false);
     }
 /* A colored lit cube. Needs light source! */ 
     
