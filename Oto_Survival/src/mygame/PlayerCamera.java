@@ -94,7 +94,7 @@ public class PlayerCamera extends Node {
                     animationChannel.setAnim("stand");
                 }
             } else if (!"Walk".equals(animationChannel.getAnimationName())) {
-                animationChannel.setAnim("Walk", 1f);
+                animationChannel.setAnim("Walk", 2f);
             }
         }
 
@@ -117,12 +117,12 @@ public class PlayerCamera extends Node {
         }*/
 
         if (left) {
-                if(getWorldTranslation().x < 5)
-                    walkDirection.addLocal(camDir.mult(2));
+                if(getWorldTranslation().z > -0.6f)
+                    walkDirection.addLocal(camDir.mult(-2));
                     //System.out.println(getWorldTranslation());
             } else if (right) {
-                if(getWorldTranslation().x > -5)
-                    walkDirection.addLocal(camDir.mult(-2));
+                if(getWorldTranslation().z < 1.5f)
+                    walkDirection.addLocal(camDir.mult(2));
                     //System.out.println(getWorldTranslation());
             }
             

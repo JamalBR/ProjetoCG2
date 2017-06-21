@@ -35,6 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.JOptionPane;
+import com.jme3.system.AppSettings;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -46,7 +54,24 @@ public class Main
 
     public static void main(String[] args) {
         Main app = new Main();
-        app.showSettings = false;
+        AppSettings cfg = new AppSettings(true);
+        cfg.setFrameRate(60); // set to less than or equal screen refresh rate
+        cfg.setVSync(true);   // prevents page tearing
+        cfg.setFrequency(60); // set to screen refresh rate
+        cfg.setResolution(1024, 768);
+        cfg.setFullscreen(true);
+        cfg.setSamples(2);    // anti-aliasing
+        cfg.setTitle("My jMonkeyEngine 3 Game"); // branding: window name
+        try {
+            // Branding: window icon
+            cfg.setIcons(new BufferedImage[]{ImageIO.read(new File("assets/Interface/icon.gif"))});
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Icon missing.", ex);
+        }
+        // branding: load splashscreen from assets
+        cfg.setSettingsDialogImage("Interface/MySplashscreen.png");
+        app.setShowSettings(false); // or don't display splashscreen
+        app.setSettings(cfg);
         app.start();
     }
     private BulletAppState bulletAppState;
@@ -97,16 +122,19 @@ public class Main
         
         boxMatColosion = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md"); 
         boxMatColosion.setBoolean("UseMaterialColors", true);
-        boxMatColosion.setColor("Ambient", ColorRGBA.Red);
-        boxMatColosion.setColor("Diffuse", ColorRGBA.Red); 
+        boxMatColosion.setColor("Ambient", ColorRGBA.Blue);
+        boxMatColosion.setColor("Diffuse", ColorRGBA.Blue); 
         
         ajustaCamera();
         createPlayer();
-        //createCubo();
+        createCubo(-25, 3,0);
         initAudio();
         initKeys();
         
        // bulletAppState.setDebugEnabled(false);
+
+
+        bulletAppState.setDebugEnabled(false);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
     }
 
@@ -114,6 +142,7 @@ public class Main
     public void simpleUpdate(float tpf) {
 
         player.upDateKeys(tpf, up, down, left, right);
+        missingShoot();
 
     }
 
@@ -148,7 +177,7 @@ public class Main
                 }
                 break;
         }
-        if (binding.equals("Tiro")) {
+        if (binding.equals("Disparo")) {
             createTiro();
             somTiro.playInstance();
         }
@@ -200,12 +229,11 @@ public class Main
         boxGeo.setLocalTranslation(x,y,z);
         rootNode.attachChild(boxGeo);
         
-
-
-        RigidBodyControl boxPhysicsNode = new RigidBodyControl(0);
+        RigidBodyControl boxPhysicsNode = new RigidBodyControl(0.5f);
         boxGeo.addControl(boxPhysicsNode);
         bulletAppState.getPhysicsSpace().add(boxPhysicsNode);
-
+        Random gR = new Random();
+        boxPhysicsNode.setGravity(Vector3f.UNIT_Y.add(0, ((gR.nextFloat()*(-2f))-1), 0));
     }
     
     private void createTiro() {
@@ -214,14 +242,13 @@ public class Main
         Material tiro_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         tiro_mat.setColor("Color", ColorRGBA.Red);
         tiro.setMaterial(tiro_mat);
-        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z + 0.4f ));
+        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z)/0.6f);
         rootNode.attachChild(tiro);
         
         RigidBodyControl tiroPhysicsNode = new RigidBodyControl(1);
         tiro.addControl(tiroPhysicsNode);
         bulletAppState.getPhysicsSpace().add(tiroPhysicsNode);
-        tiroPhysicsNode.setLinearVelocity(new Vector3f(0f,20,0f));
-        
+        tiroPhysicsNode.setLinearVelocity(new Vector3f(0f,15,0f));
     }
 
     private void createCity() {
@@ -234,16 +261,33 @@ public class Main
         scene.addControl(cityPhysicsNode);
         bulletAppState.getPhysicsSpace().add(cityPhysicsNode);
     }
+    
+    void missingShoot(){
+         Spatial tiro = rootNode.getChild("Tiro");
+         if (tiro != null) {
+            if (tiro.getLocalTranslation().y > 4) {
+                int index = rootNode.getChildIndex(tiro);
+                rootNode.detachChildAt(index);
+                bulletAppState.getPhysicsSpace().removeAll(tiro);
+            }
+        }
+    }
+    
+    void removeHitedBox(Spatial hited){
+        int index = rootNode.getChildIndex(hited);
+        rootNode.detachChildAt(index);
+        bulletAppState.getPhysicsSpace().removeAll(hited);
+    }
 
     private void initKeys() {
         inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Disparo", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
        
 
         inputManager.addListener(this, "CharLeft", "CharRight");
-        inputManager.addListener(this, "Tiro", "CharBackward");
+        inputManager.addListener(this, "Disparo", "CharBackward");
 
     }
     
@@ -256,15 +300,17 @@ public class Main
     @Override
     public void collision(PhysicsCollisionEvent event) {
 
-        if(event.getNodeA().getName().equals("Tiro") || event.getNodeA().getName().equals("Tiro")){
+        if(event.getNodeA().getName().equals("Tiro") || event.getNodeB().getName().equals("Tiro")){
         
             if(event.getNodeA().getName().equals("Box")){
                   Spatial s = event.getNodeA();
+                  removeHitedBox(s);
                   s.setMaterial(boxMatColosion);
             }
             else
             if(event.getNodeB().getName().equals("Box")){
                   Spatial s = event.getNodeB();
+                  removeHitedBox(s);
                   s.setMaterial(boxMatColosion);
             }
             
