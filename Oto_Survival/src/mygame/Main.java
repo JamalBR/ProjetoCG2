@@ -16,6 +16,7 @@ import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.light.AmbientLight;
@@ -30,7 +31,10 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -47,11 +51,40 @@ public class Main
     }
     private BulletAppState bulletAppState;
     private PlayerCamera player;
-    private boolean up = false, down = false, left = false, right = false;
+    private boolean up = false, down = false, left = false, right = false, reinicia = false, pausar = false;
     private Material boxMatColosion;
-    AudioNode somTiro;
+    AudioNode somTiro;    
+    public ArrayList<Integer> recordes = new ArrayList<Integer>();
+    private boolean isRunning = true;
+    private final ActionListener pauseActionListener;
+    private final AnalogListener pauseAnalogListener;
     
     
+    public Main()
+    {
+            this.pauseAnalogListener = new AnalogListener() {
+            @Override
+            public void onAnalog(String name, float value, float tpf) {
+                if (isRunning) {
+
+                } else {
+                    if(pausar != true)
+                        menu();
+                }
+            }
+        };
+        this.pauseActionListener = new ActionListener() {
+            @Override
+            public void onAction(String name, boolean keyPressed,
+                    float tpf) {
+                if (name.equals("Pause") && !keyPressed) {
+                    isRunning = !isRunning;
+                    if(pausar != true)
+                        menu();
+                }
+            }
+        };
+    }
     @Override
     public void simpleInitApp() {
 
@@ -72,7 +105,7 @@ public class Main
         //createCubo();
         initAudio();
         initKeys();
-
+        
        // bulletAppState.setDebugEnabled(false);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
     }
@@ -236,6 +269,164 @@ public class Main
             }
             
         }
+        
+    }
+    
+    public void menu()
+    {
+        List<String> optionList = new ArrayList<String>();
+        optionList.add("0");
+        optionList.add("1");
+        optionList.add("2");
+        optionList.add("3");
+        optionList.add("4");
+        optionList.add("5");
+        optionList.add("6");
+        optionList.add("7");
+        optionList.add("8");
+        optionList.add("9");
+        Object[] options = optionList.toArray();
+        int value;
+        value = JOptionPane.showOptionDialog(
+                null,
+                "Selecione um dos itens:\n "
+                        + "0. Sair\n"
+                        + " 1. Novo Jogo\n "
+                        + "2. Melhores\n "
+                        + "3. Ajuda\n "
+                        + "4. Sobre\n"
+                        + " 5. GitHub\n"
+                        + " 6. Referências/Fontes\n"
+                        + " 7. Áudio e Vídeo\n"
+                        + " 8. Voltar ao jogo\n"
+                        + " 9. Dificuldade\n",
+                "Opção:",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                optionList.get(0));
+        
+        if (value == 1) {
+            System.out.println(1);
+            pausar = false;
+            setPausar(false);
+            reinicia = true;
+        }
+        if(value == 2){
+            CalculaRecordes(0);
+            Object[] rc = recordes.toArray();
+            JOptionPane.showOptionDialog(
+                    null,
+                    "Melhores:\n ",
+                    "",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    rc, recordes.get(0));
+            
+        }
+        if(value == 3){
+            JOptionPane.showMessageDialog(null,
+                  "Teclas de Comando:"
+                + "W - Pular\n"
+                + "E - Andar para a esquerda\n"
+                + "D - Andar para a direita\n"
+                + "S - Bloquear\n"
+                + "P - Pausar\n"
+                + "Objetivo:"
+                + "Chegar até o último degrau com a menor quantidade possível de saltos."
+                + "No fim haverá um prêmio, que é o carro que o ninja pode utilizar para escapar da cidade.");   
+            menu();
+        }
+        if(value == 4){
+            JOptionPane.showMessageDialog(null,
+                  "Autores: \n"
+                   + "Bruno de Castro Celestino - 140576\n"
+                   + "Gabriel Nistardo Bourg - 140839"
+                   + "\n\nEstudantes de Engenharia da Computação - Facens - Sorocaba-SP");
+            menu();
+            
+        }
+        if(value == 5){
+            JOptionPane.showMessageDialog(null,
+                  "Github.com/BCastro18");
+            menu();
+            
+        }
+        if(value == 6){
+            JOptionPane.showMessageDialog(null,
+                  "Referências:\n"
+                + "Todas as imagens e áudios utilizados no projeto são do JMonkey e utilizados para teste."
+                + "Todos com os devidos direitos autorais permitidos.");
+            menu();
+        }
+        if(value == 7){
+            List<String> som = new ArrayList<String>();
+            som.add("Sim");
+            som.add("Não");
+            Object[] somOp = som.toArray();
+            int op;
+            op = JOptionPane.showOptionDialog(
+                    null,
+                    "Deseja som?\n ",
+                    "Opção:",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    somOp,
+                    som.get(0));
+            if(op == 0){
+                //somAmbiente.play();
+            }
+            if(op == 1){
+                //somAmbiente.stop();
+            }
+        }
+        if(value == 8){
+            if(pausar == true){
+                pausar = false;
+                setPausar(false);
+            }
+        }
+        
+        if(value == 0){
+            System.exit(0);
+        }
+        
+        if(value == 9){
+            List<String> dif = new ArrayList<String>();
+            dif.add("Easy");
+            dif.add("Medium");
+            dif.add("Hard");
+            Object[] Ops = dif.toArray();
+            int opDif;
+            opDif = JOptionPane.showOptionDialog(
+                    null,
+                    "Qual dificuldade?\n ",
+                    "Opções:",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    Ops,
+                    dif.get(0));
+                  
+        }
+    }
+          public void setPausar(boolean y) {
+        if (y) {
+            pausar = true;
+            inputManager.removeListener(this);
+            inputManager.removeListener(this);
+        }
+        if (!y) {
+            pausar = false;
+            inputManager.addListener(this, "CharForward", "CharBackward");
+            inputManager.addListener(this, "CharLeft", "CharRight");
+        }
+    }
+
+    private void CalculaRecordes(int i) {
         
     }
 }
