@@ -299,7 +299,7 @@ public class Main
     void missingShoot(){
          Spatial tiro = rootNode.getChild("Tiro");
          if (tiro != null) {
-            if (tiro.getLocalTranslation().y > 4) {
+            if (tiro.getLocalTranslation().y > 2) {
                 int index = rootNode.getChildIndex(tiro);
                 rootNode.detachChildAt(index);
                 bulletAppState.getPhysicsSpace().removeAll(tiro);
@@ -496,7 +496,8 @@ public class Main
                   
         }
     }
-          public void setPausar(boolean y) {
+    //metodo que pausa o jogo
+    public void setPausar(boolean y) {
         if (y) {
             pausar = true;
             inputManager.removeListener(this);
@@ -504,6 +505,7 @@ public class Main
         }
         if (!y) {
             pausar = false;
+            inputManager.addListener(this);
             inputManager.addListener(this, "CharLeft", "CharRight");
             inputManager.addListener(this, "Disparo", "CharBackward");
         }
