@@ -140,10 +140,44 @@ public class Main
 
     @Override
     public void simpleUpdate(float tpf) {
+        
 
+
+        if(!pausar)
+        {
+            missingShoot();
+        }
+        
+        if (reinicia) {
+            //setar posicao inicial do personagem
+            //CalculaRecordes(placar);
+            //placar = 0;
+            reinicia = false;
+        }
         player.upDateKeys(tpf, up, down, left, right);
-        missingShoot();
-
+       
+        //precisa alterar (frescurinha)
+        if (!isRunning) {
+            /*guiNode.detachAllChildren();
+            guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+            BitmapText helloText = new BitmapText(guiFont, false);
+            helloText.setSize(guiFont.getCharSet().getRenderedSize());
+            helloText.setColor(ColorRGBA.Black);
+            helloText.setText("PAUSE");
+            helloText.setLocalTranslation(300, helloText.getLineHeight(), 0);
+            guiNode.attachChild(helloText);*/
+            setPausar(true);
+        } else {
+            //guiNode.detachAllChildren();
+            setPausar(false);
+            /*guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+            BitmapText text = new BitmapText(guiFont, false);
+            text.setSize(guiFont.getCharSet().getRenderedSize());
+            text.setColor(ColorRGBA.Black);
+            text.setText("Placar: "/* + placar);
+            text.setLocalTranslation(30, text.getLineHeight() + 445, 0);
+            guiNode.attachChild(text);*/
+        }
     }
 
     @Override
@@ -284,8 +318,9 @@ public class Main
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Disparo", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
-       
+        inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
 
+        inputManager.addListener(pauseActionListener, new String[]{"Pause"});
         inputManager.addListener(this, "CharLeft", "CharRight");
         inputManager.addListener(this, "Disparo", "CharBackward");
 
@@ -320,8 +355,7 @@ public class Main
     
     public void menu()
     {
-        List<String> optionList = new ArrayList<String>();
-        optionList.add("0");
+        List<String> optionList = new ArrayList<String>();        
         optionList.add("1");
         optionList.add("2");
         optionList.add("3");
@@ -331,21 +365,23 @@ public class Main
         optionList.add("7");
         optionList.add("8");
         optionList.add("9");
+        optionList.add("10");
+        
         Object[] options = optionList.toArray();
         int value;
         value = JOptionPane.showOptionDialog(
                 null,
                 "Selecione um dos itens:\n "
-                        + "0. Sair\n"
-                        + " 1. Novo Jogo\n "
-                        + "2. Melhores\n "
-                        + "3. Ajuda\n "
-                        + "4. Sobre\n"
-                        + " 5. GitHub\n"
-                        + " 6. Referências/Fontes\n"
-                        + " 7. Áudio e Vídeo\n"
-                        + " 8. Voltar ao jogo\n"
-                        + " 9. Dificuldade\n",
+                + "1 - Retomar o Jogo\n"
+                + "2 - Novo Jogo\n"
+                + "3 - Dificuldade\n"        
+                + "4 - Áudio\n"
+                + "5 - Ranking\n"
+                + "6 - Ajuda\n"
+                + "7 - Github\n"
+                + "8 - Referências e Fontes\n"
+                + "9 - Sobre\n"
+                + "10 - Sair\n",   
                 "Opção:",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
@@ -353,18 +389,18 @@ public class Main
                 options,
                 optionList.get(0));
         
-        if (value == 1) {
+        if (value == 2) {
             System.out.println(1);
             pausar = false;
             setPausar(false);
             reinicia = true;
         }
-        if(value == 2){
+        if(value == 5){
             CalculaRecordes(0);
             Object[] rc = recordes.toArray();
             JOptionPane.showOptionDialog(
                     null,
-                    "Melhores:\n ",
+                    "Ranking:\n ",
                     "",
                     JOptionPane.INFORMATION_MESSAGE,
                     JOptionPane.INFORMATION_MESSAGE,
@@ -372,42 +408,43 @@ public class Main
                     rc, recordes.get(0));
             
         }
-        if(value == 3){
+        if(value == 6){
             JOptionPane.showMessageDialog(null,
                   "Teclas de Comando:"
-                + "W - Pular\n"
-                + "E - Andar para a esquerda\n"
-                + "D - Andar para a direita\n"
-                + "S - Bloquear\n"
+                + "W - Atirar\n"
+                + "A - Andar para a esquerda\n"
+                + "D - Andar para a direita\n"                
                 + "P - Pausar\n"
                 + "Objetivo:"
-                + "Chegar até o último degrau com a menor quantidade possível de saltos."
-                + "No fim haverá um prêmio, que é o carro que o ninja pode utilizar para escapar da cidade.");   
+                + "Não deixar nenhum bloco cair no chão, senão o jogo acaba."
+                + "Ganha quem sobreviver mais tempo.");   
             menu();
         }
-        if(value == 4){
+        if(value == 9){
             JOptionPane.showMessageDialog(null,
-                  "Autores: \n"
-                   + "Bruno de Castro Celestino - 140576\n"
-                   + "Gabriel Nistardo Bourg - 140839"
-                   + "\n\nEstudantes de Engenharia da Computação - Facens - Sorocaba-SP");
+                   "Otto survival é um jogo desenvolvido para a disciplina de Computação Gráfica II,\n"
+                   + "do curso Engenharia da Computação, ministrada pelo professor doutor Glauco Todesco\n"
+                   + "na Faculdade de Engenharia de Sorocaba(FACENS).\n"
+                   + "Autores: \n"
+                   + "Giovanni Garcia R. de Souza - 140872\n"
+                   + "Maurício Luís de Lorenzi - 141269");
             menu();
             
         }
-        if(value == 5){
+        if(value == 7){
             JOptionPane.showMessageDialog(null,
-                  "Github.com/BCastro18");
+                  "https://github.com/JamalBR/ProjetoCG2");
             menu();
             
         }
-        if(value == 6){
+        if(value == 8){
             JOptionPane.showMessageDialog(null,
                   "Referências:\n"
                 + "Todas as imagens e áudios utilizados no projeto são do JMonkey e utilizados para teste."
                 + "Todos com os devidos direitos autorais permitidos.");
             menu();
         }
-        if(value == 7){
+        if(value == 4){
             List<String> som = new ArrayList<String>();
             som.add("Sim");
             som.add("Não");
@@ -429,18 +466,18 @@ public class Main
                 //somAmbiente.stop();
             }
         }
-        if(value == 8){
+        if(value == 1){
             if(pausar == true){
                 pausar = false;
                 setPausar(false);
             }
         }
         
-        if(value == 0){
+        if(value == 10){
             System.exit(0);
         }
         
-        if(value == 9){
+        if(value == 3){
             List<String> dif = new ArrayList<String>();
             dif.add("Easy");
             dif.add("Medium");
@@ -467,8 +504,8 @@ public class Main
         }
         if (!y) {
             pausar = false;
-            inputManager.addListener(this, "CharForward", "CharBackward");
             inputManager.addListener(this, "CharLeft", "CharRight");
+            inputManager.addListener(this, "Disparo", "CharBackward");
         }
     }
 
