@@ -164,7 +164,8 @@ public class Main
             //setar posicao inicial do personagem
             //CalculaRecordes(placar);
             //placar = 0;
-            //timeElapsed=0;
+            onstartTime = System.currentTimeMillis();
+            timeElapsed = 0;
             reinicia = false;
         }
         player.upDateKeys(tpf, up, down, left, right);
