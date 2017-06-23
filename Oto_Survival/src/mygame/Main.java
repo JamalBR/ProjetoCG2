@@ -169,6 +169,10 @@ public class Main
             else if(auxTime != timeElapsed){
                 qtdCubo=0;
             }
+            if(vida == 0){
+                createGameOver();
+                menu();
+            }
         }
         
         
@@ -334,7 +338,9 @@ public class Main
                 int index = rootNode.getChildIndex(box);
                 rootNode.detachChildAt(index);
                 bulletAppState.getPhysicsSpace().removeAll(box);
-                vida-=1;
+                if(vida > 0){
+                    vida-=1;
+                }
             }
         }
     }
@@ -592,7 +598,18 @@ public class Main
         timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.85f, 0);
         guiNode.attachChild(timeText);
     }
-
+    
+    private void createGameOver()
+    {
+        guiNode.detachChildNamed("GameOver");       
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText timeText = new BitmapText(guiFont, false);
+        timeText.setName("GameOver");
+        timeText.setSize(guiFont.getCharSet(). getRenderedSize());
+        timeText.setText("Game Over");
+        timeText.setLocalTranslation(this.settings.getWidth() * 0.5f, this.settings.getHeight() * 0.95f, 0);
+        guiNode.attachChild(timeText);
+    }
     private void CalculaRecordes(long i) {
         
     }
