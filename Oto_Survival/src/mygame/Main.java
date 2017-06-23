@@ -39,6 +39,7 @@ import com.jme3.system.AppSettings;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ import javax.imageio.ImageIO;
 
 /**
  *
- * @author Giovanni Garcia Ribeiro de Souza e Marício Luís de Lorenzi
+ * @author Giovanni Garcia Ribeiro de Souza e Maurício Luís de Lorenzi
  */
 public class Main
         extends SimpleApplication
@@ -58,8 +59,8 @@ public class Main
         cfg.setFrameRate(60); // set to less than or equal screen refresh rate
         cfg.setVSync(true);   // prevents page tearing
         cfg.setFrequency(60); // set to screen refresh rate
-        cfg.setResolution(1024, 768);
-        cfg.setFullscreen(true);
+        cfg.setResolution(1100, 600);
+        cfg.setFullscreen(false);
         cfg.setSamples(2);    // anti-aliasing
         cfg.setTitle("My jMonkeyEngine 3 Game"); // branding: window name
         try {
@@ -71,30 +72,32 @@ public class Main
         // branding: load splashscreen from assets
         cfg.setSettingsDialogImage("Interface/MySplashscreen.png");
         app.setShowSettings(false); // or don't display splashscreen
-        app.setSettings(cfg);
-        app.start();
+        app.setSettings(cfg);        
+        app.start();     
+        
     }
     private BulletAppState bulletAppState;
     private PlayerCamera player;
-    private boolean up = false, down = false, left = false, right = false, reinicia = false, pausar = false;
+    private boolean up = false, down = false, left = false, right = false, reinicia = false, pausar = false, isRunning = true;;
     private Material boxMatColosion;
     AudioNode somTiro;    
     public ArrayList<Integer> recordes = new ArrayList<Integer>();
-    private boolean isRunning = true;
-    private final ActionListener pauseActionListener;
-    private final AnalogListener pauseAnalogListener;
+    private int volume;
+    long onstartTime, timeElapsed;
+    //private final ActionListener pauseActionListener;
+    //private final AnalogListener pauseAnalogListener;
     
     
     public Main()
-    {
-            this.pauseAnalogListener = new AnalogListener() {
+    {       
+     /*       this.pauseAnalogListener = new AnalogListener() {
             @Override
             public void onAnalog(String name, float value, float tpf) {
                 if (isRunning) {
-
-                } else {
-                    if(pausar != true)
+                    if(pausar == false)
+                    {
                         menu();
+                    }
                 }
             }
         };
@@ -108,7 +111,7 @@ public class Main
                         menu();
                 }
             }
-        };
+        };*/
     }
     @Override
     public void simpleInitApp() {
@@ -129,23 +132,28 @@ public class Main
         createPlayer();
         createCubo(-25, 3,0);
         initAudio();
-        initKeys();
-        
+        initKeys();   
+          
        // bulletAppState.setDebugEnabled(false);
 
 
         bulletAppState.setDebugEnabled(false);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
+        
+        menu();
+        
+        onstartTime = System.currentTimeMillis();
+        timeElapsed = 0;
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        
-
 
         if(!pausar)
         {
             missingShoot();
+           timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
+            createTimer();
         }
         
         if (reinicia) {
@@ -166,10 +174,10 @@ public class Main
             helloText.setText("PAUSE");
             helloText.setLocalTranslation(300, helloText.getLineHeight(), 0);
             guiNode.attachChild(helloText);*/
-            setPausar(true);
+            //setPausar(true);
         } else {
             //guiNode.detachAllChildren();
-            setPausar(false);
+            //setPausar(false);
             /*guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
             BitmapText text = new BitmapText(guiFont, false);
             text.setSize(guiFont.getCharSet().getRenderedSize());
@@ -178,6 +186,7 @@ public class Main
             text.setLocalTranslation(30, text.getLineHeight() + 445, 0);
             guiNode.attachChild(text);*/
         }
+        somTiro.setVolume(volume);
     }
 
     @Override
@@ -320,7 +329,7 @@ public class Main
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
 
-        inputManager.addListener(pauseActionListener, new String[]{"Pause"});
+//        inputManager.addListener(pauseActionListener, new String[]{"Pause"});
         inputManager.addListener(this, "CharLeft", "CharRight");
         inputManager.addListener(this, "Disparo", "CharBackward");
 
@@ -365,23 +374,21 @@ public class Main
         optionList.add("7");
         optionList.add("8");
         optionList.add("9");
-        optionList.add("10");
         
         Object[] options = optionList.toArray();
         int value;
         value = JOptionPane.showOptionDialog(
                 null,
-                "Selecione um dos itens:\n "
-                + "1 - Retomar o Jogo\n"
-                + "2 - Novo Jogo\n"
-                + "3 - Dificuldade\n"        
-                + "4 - Áudio\n"
-                + "5 - Ranking\n"
-                + "6 - Ajuda\n"
-                + "7 - Github\n"
-                + "8 - Referências e Fontes\n"
-                + "9 - Sobre\n"
-                + "10 - Sair\n",   
+                "Selecione um dos itens:\n"
+                + "1 - Novo Jogo\n"
+                + "2 - Dificuldade\n"        
+                + "3 - Áudio\n"
+                + "4 - Ranking\n"
+                + "5 - Ajuda\n"
+                + "6 - Github\n"
+                + "7 - Referências e Fontes\n"
+                + "8 - Sobre\n"
+                + "9 - Sair\n",   
                 "Opção:",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
@@ -389,13 +396,13 @@ public class Main
                 options,
                 optionList.get(0));
         
-        if (value == 2) {
-            System.out.println(1);
+        if (value == 0) {
+            //System.out.println(1);
             pausar = false;
-            setPausar(false);
+            //setPausar(false);
             reinicia = true;
         }
-        if(value == 5){
+        if(value == 3){
             CalculaRecordes(0);
             Object[] rc = recordes.toArray();
             JOptionPane.showOptionDialog(
@@ -408,7 +415,7 @@ public class Main
                     rc, recordes.get(0));
             
         }
-        if(value == 6){
+        if(value == 4){
             JOptionPane.showMessageDialog(null,
                   "Teclas de Comando:"
                 + "W - Atirar\n"
@@ -420,64 +427,77 @@ public class Main
                 + "Ganha quem sobreviver mais tempo.");   
             menu();
         }
-        if(value == 9){
+        if(value == 7){
             JOptionPane.showMessageDialog(null,
                    "Otto survival é um jogo desenvolvido para a disciplina de Computação Gráfica II,\n"
                    + "do curso Engenharia da Computação, ministrada pelo professor doutor Glauco Todesco\n"
                    + "na Faculdade de Engenharia de Sorocaba(FACENS).\n"
                    + "Autores: \n"
-                   + "Giovanni Garcia R. de Souza - 140872\n"
+                   + "Giovanni Garcia Ribeiro de Souza - 140872\n"
                    + "Maurício Luís de Lorenzi - 141269");
             menu();
             
         }
-        if(value == 7){
+        if(value == 5){
             JOptionPane.showMessageDialog(null,
                   "https://github.com/JamalBR/ProjetoCG2");
             menu();
             
         }
-        if(value == 8){
+        if(value == 6){
             JOptionPane.showMessageDialog(null,
                   "Referências:\n"
                 + "Todas as imagens e áudios utilizados no projeto são do JMonkey e utilizados para teste."
                 + "Todos com os devidos direitos autorais permitidos.");
             menu();
         }
-        if(value == 4){
+        if(value == 2){
             List<String> som = new ArrayList<String>();
-            som.add("Sim");
-            som.add("Não");
+            som.add("+");
+            som.add("-");
+            som.add("OK");
             Object[] somOp = som.toArray();
-            int op;
+            int op = 0;
+            
+            while( op != 2){
             op = JOptionPane.showOptionDialog(
                     null,
-                    "Deseja som?\n ",
-                    "Opção:",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
+                    "Aumente ou diminua o som! (Máximo 10)\n Volume: " + volume + "\n",
+                    null,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    JOptionPane.INFORMATION_MESSAGE,
                     null,
                     somOp,
                     som.get(0));
+            
             if(op == 0){
-                //somAmbiente.play();
+                
+                if( volume + 1 <= 10 )
+                {
+                    volume += 1;
+                }
             }
             if(op == 1){
-                //somAmbiente.stop();
+                if(volume - 1 >= 0)
+                {
+                    volume -= 1;
+                }
             }
+            }
+            menu();
         }
-        if(value == 1){
+        /*if(value == 0){
             if(pausar == true){
                 pausar = false;
                 setPausar(false);
             }
-        }
+        }*/
         
-        if(value == 10){
+        if(value == 8){
             System.exit(0);
         }
         
-        if(value == 3){
+        if(value == 1){
             List<String> dif = new ArrayList<String>();
             dif.add("Easy");
             dif.add("Medium");
@@ -497,7 +517,7 @@ public class Main
         }
     }
     //metodo que pausa o jogo
-    public void setPausar(boolean y) {
+    /*public void setPausar(boolean y) {
         if (y) {
             pausar = true;
             inputManager.removeListener(this);
@@ -505,10 +525,21 @@ public class Main
         }
         if (!y) {
             pausar = false;
-            inputManager.addListener(this);
             inputManager.addListener(this, "CharLeft", "CharRight");
             inputManager.addListener(this, "Disparo", "CharBackward");
         }
+    }*/
+    
+    private void createTimer()
+    {
+        guiNode.detachChildNamed("TIMER");       
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText timeText = new BitmapText(guiFont, false);
+        timeText.setName("TIMER");
+        timeText.setSize(guiFont.getCharSet().getRenderedSize());
+        timeText.setText("Time Elapsed: " +  timeElapsed);
+        timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.95f, 0);
+        guiNode.attachChild(timeText);
     }
 
     private void CalculaRecordes(int i) {
