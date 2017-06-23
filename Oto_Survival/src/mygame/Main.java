@@ -171,15 +171,21 @@ public class Main
             }
             if(vida == 0){
                 createGameOver();
-                menu();
+                pausar = true;
             }
+        }
+        else{
+            
+            menu();
         }
         
         
         if (reinicia) {
             //reinicia o jogo
             CalculaRecordes(timeElapsed);
+            guiNode.detachChildNamed("GameOver");
             placar = 0;
+            vida = 3;
             onstartTime = System.currentTimeMillis();
             timeElapsed = 0;
             deleteAllCube();
@@ -605,9 +611,9 @@ public class Main
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText timeText = new BitmapText(guiFont, false);
         timeText.setName("GameOver");
-        timeText.setSize(guiFont.getCharSet(). getRenderedSize());
+        timeText.setSize(guiFont.getCharSet(). getRenderedSize()*2);
         timeText.setText("Game Over");
-        timeText.setLocalTranslation(this.settings.getWidth() * 0.5f, this.settings.getHeight() * 0.95f, 0);
+        timeText.setLocalTranslation(this.settings.getWidth() * 0.45f, this.settings.getHeight() * 0.95f, 0);
         guiNode.attachChild(timeText);
     }
     private void CalculaRecordes(long i) {
