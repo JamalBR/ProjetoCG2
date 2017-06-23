@@ -83,7 +83,8 @@ public class Main
     AudioNode somTiro;    
     public ArrayList<Integer> recordes = new ArrayList<Integer>();
     private int volume;
-    long onstartTime, timeElapsed;
+    int qtdCubo=0;
+    long onstartTime, timeElapsed, auxTime=0;
     private final ActionListener pauseActionListener;
     private final AnalogListener pauseAnalogListener;
     
@@ -154,8 +155,13 @@ public class Main
             missingShoot();
             timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
             createTimer();
-            if(timeElapsed%4 == 0){
+            if(timeElapsed%4 == 0 && qtdCubo < 5){
+                auxTime = timeElapsed;
                 createRandomPosCube();
+                qtdCubo++;
+            }
+            else if(auxTime != timeElapsed){
+                qtdCubo=0;
             }
         }
         
