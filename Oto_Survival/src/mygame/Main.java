@@ -82,7 +82,7 @@ public class Main
     private Material boxMatColosion;
     AudioNode somTiro;    
     public ArrayList<Integer> recordes = new ArrayList<Integer>();
-    private int volume;
+    private int volume,placar=0;
     int qtdCubo=0;
     long onstartTime, timeElapsed, auxTime=0;
     private final ActionListener pauseActionListener;
@@ -155,6 +155,7 @@ public class Main
             missingShoot();
             timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
             createTimer();
+            createPlacar();
             if(timeElapsed%4 == 0 && qtdCubo < 5){
                 auxTime = timeElapsed;
                 createRandomPosCube();
@@ -169,9 +170,10 @@ public class Main
         if (reinicia) {
             //setar posicao inicial do personagem
             //CalculaRecordes(placar);
-            //placar = 0;
+            placar = 0;
             onstartTime = System.currentTimeMillis();
             timeElapsed = 0;
+            deleteAllCube();
             reinicia = false;
         }
         player.upDateKeys(tpf, up, down, left, right);
@@ -284,16 +286,31 @@ public class Main
         boxGeo.setLocalTranslation(x,y,z);
         rootNode.attachChild(boxGeo);
         
-        RigidBodyControl boxPhysicsNode = new RigidBodyControl(0.5f);
+        RigidBodyControl boxPhysicsNode = new RigidBodyControl(1f);
         boxGeo.addControl(boxPhysicsNode);
         bulletAppState.getPhysicsSpace().add(boxPhysicsNode);
         Random gR = new Random();
-        boxPhysicsNode.setGravity(Vector3f.UNIT_Y.add(0, ((gR.nextFloat()*(-1f)-1)), 0));
+        boxPhysicsNode.setGravity(Vector3f.UNIT_Y.add(0, -1.5f, 0));
     }
     
+    //remove todas as caixas do jogo
+    private void deleteAllCube(){
+        ArrayList<Spatial> delete = new ArrayList();
+        for(Spatial s: rootNode.getChildren()){
+            if(s.getName().compareTo("Box") == 0){
+                delete.add(s);
+            }
+        }
+        for(Spatial sp: delete)
+            rootNode.detachChild(sp);
+    }
+    
+    //criada o cubo variando a posição em z.
     private void createRandomPosCube(){
-        Random rnd = new Random();
-        createCubo(-25, 1,rnd.nextInt(3)-1);
+        double rnd = Math.random();
+        rnd = (rnd*3) - 1;
+        
+        createCubo(-25, -1, (float) rnd);
     }
     
     private void createTiro() {
@@ -325,7 +342,7 @@ public class Main
     void missingShoot(){
          Spatial tiro = rootNode.getChild("Tiro");
          if (tiro != null) {
-            if (tiro.getLocalTranslation().y > 2) {
+            if (tiro.getLocalTranslation().y > -1.5f) {
                 int index = rootNode.getChildIndex(tiro);
                 rootNode.detachChildAt(index);
                 bulletAppState.getPhysicsSpace().removeAll(tiro);
@@ -337,6 +354,7 @@ public class Main
         int index = rootNode.getChildIndex(hited);
         rootNode.detachChildAt(index);
         bulletAppState.getPhysicsSpace().removeAll(hited);
+        placar+=1;
     }
 
     private void initKeys() {
@@ -551,6 +569,17 @@ public class Main
         timeText.setSize(guiFont.getCharSet().getRenderedSize());
         timeText.setText("Time Elapsed: " +  timeElapsed);
         timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.95f, 0);
+        guiNode.attachChild(timeText);
+    }
+    private void createPlacar()
+    {
+        guiNode.detachChildNamed("Placar");       
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText timeText = new BitmapText(guiFont, false);
+        timeText.setName("Placar");
+        timeText.setSize(guiFont.getCharSet().getRenderedSize());
+        timeText.setText("Placar: " +  placar);
+        timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.90f, 0);
         guiNode.attachChild(timeText);
     }
 
