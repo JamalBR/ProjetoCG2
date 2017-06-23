@@ -117,12 +117,12 @@ public class PlayerCamera extends Node {
         }*/
 
         if (left) {
-                if(getWorldTranslation().z > -0.6f)
-                    walkDirection.addLocal(camDir.mult(-2));
+                if(getWorldTranslation().z > -1f)
+                    walkDirection.addLocal(camDir.mult(-1.2f));
                     //System.out.println(getWorldTranslation());
             } else if (right) {
-                if(getWorldTranslation().z < 1.5f)
-                    walkDirection.addLocal(camDir.mult(2));
+                if(getWorldTranslation().z < 2f)
+                    walkDirection.addLocal(camDir.mult(1.2f));
                     //System.out.println(getWorldTranslation());
             }
             

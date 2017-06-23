@@ -84,13 +84,13 @@ public class Main
     public ArrayList<Integer> recordes = new ArrayList<Integer>();
     private int volume;
     long onstartTime, timeElapsed;
-    //private final ActionListener pauseActionListener;
-    //private final AnalogListener pauseAnalogListener;
+    private final ActionListener pauseActionListener;
+    private final AnalogListener pauseAnalogListener;
     
     
     public Main()
     {       
-     /*       this.pauseAnalogListener = new AnalogListener() {
+            this.pauseAnalogListener = new AnalogListener() {
             @Override
             public void onAnalog(String name, float value, float tpf) {
                 if (isRunning) {
@@ -111,7 +111,7 @@ public class Main
                         menu();
                 }
             }
-        };*/
+        };
     }
     @Override
     public void simpleInitApp() {
@@ -130,7 +130,7 @@ public class Main
         
         ajustaCamera();
         createPlayer();
-        createCubo(-25, 3,0);
+        createRandomPosCube();
         initAudio();
         initKeys();   
           
@@ -152,14 +152,19 @@ public class Main
         if(!pausar)
         {
             missingShoot();
-           timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
+            timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
             createTimer();
+            if(timeElapsed%4 == 0){
+                createRandomPosCube();
+            }
         }
+        
         
         if (reinicia) {
             //setar posicao inicial do personagem
             //CalculaRecordes(placar);
             //placar = 0;
+            //timeElapsed=0;
             reinicia = false;
         }
         player.upDateKeys(tpf, up, down, left, right);
@@ -262,7 +267,7 @@ public class Main
 
     private void createCubo(float x, float y, float z) {
         /* A colored lit cube. Needs light source! */
-        Box boxMesh = new Box(0.1f, 0.1f, 0.1f);
+        Box boxMesh = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeo = new Geometry("Box", boxMesh);
         Material boxMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         boxMat.setBoolean("UseMaterialColors", true);
@@ -276,7 +281,12 @@ public class Main
         boxGeo.addControl(boxPhysicsNode);
         bulletAppState.getPhysicsSpace().add(boxPhysicsNode);
         Random gR = new Random();
-        boxPhysicsNode.setGravity(Vector3f.UNIT_Y.add(0, ((gR.nextFloat()*(-2f))-1), 0));
+        boxPhysicsNode.setGravity(Vector3f.UNIT_Y.add(0, ((gR.nextFloat()*(-1f)-1)), 0));
+    }
+    
+    private void createRandomPosCube(){
+        Random rnd = new Random();
+        createCubo(-25, 1,rnd.nextInt(3)-1);
     }
     
     private void createTiro() {
@@ -329,7 +339,7 @@ public class Main
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
 
-//        inputManager.addListener(pauseActionListener, new String[]{"Pause"});
+        inputManager.addListener(pauseActionListener, new String[]{"Pause"});
         inputManager.addListener(this, "CharLeft", "CharRight");
         inputManager.addListener(this, "Disparo", "CharBackward");
 
@@ -357,9 +367,7 @@ public class Main
                   removeHitedBox(s);
                   s.setMaterial(boxMatColosion);
             }
-            
         }
-        
     }
     
     public void menu()
@@ -402,55 +410,26 @@ public class Main
             //setPausar(false);
             reinicia = true;
         }
-        if(value == 3){
-            CalculaRecordes(0);
-            Object[] rc = recordes.toArray();
-            JOptionPane.showOptionDialog(
+        
+        if(value == 1){
+            List<String> dif = new ArrayList<String>();
+            dif.add("Easy");
+            dif.add("Medium");
+            dif.add("Hard");
+            Object[] Ops = dif.toArray();
+            int opDif;
+            opDif = JOptionPane.showOptionDialog(
                     null,
-                    "Ranking:\n ",
-                    "",
-                    JOptionPane.INFORMATION_MESSAGE,
-                    JOptionPane.INFORMATION_MESSAGE,
+                    "Qual dificuldade?\n ",
+                    "Opções:",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
                     null,
-                    rc, recordes.get(0));
-            
+                    Ops,
+                    dif.get(0));
+                  
         }
-        if(value == 4){
-            JOptionPane.showMessageDialog(null,
-                  "Teclas de Comando:"
-                + "W - Atirar\n"
-                + "A - Andar para a esquerda\n"
-                + "D - Andar para a direita\n"                
-                + "P - Pausar\n"
-                + "Objetivo:"
-                + "Não deixar nenhum bloco cair no chão, senão o jogo acaba."
-                + "Ganha quem sobreviver mais tempo.");   
-            menu();
-        }
-        if(value == 7){
-            JOptionPane.showMessageDialog(null,
-                   "Otto survival é um jogo desenvolvido para a disciplina de Computação Gráfica II,\n"
-                   + "do curso Engenharia da Computação, ministrada pelo professor doutor Glauco Todesco\n"
-                   + "na Faculdade de Engenharia de Sorocaba(FACENS).\n"
-                   + "Autores: \n"
-                   + "Giovanni Garcia Ribeiro de Souza - 140872\n"
-                   + "Maurício Luís de Lorenzi - 141269");
-            menu();
-            
-        }
-        if(value == 5){
-            JOptionPane.showMessageDialog(null,
-                  "https://github.com/JamalBR/ProjetoCG2");
-            menu();
-            
-        }
-        if(value == 6){
-            JOptionPane.showMessageDialog(null,
-                  "Referências:\n"
-                + "Todas as imagens e áudios utilizados no projeto são do JMonkey e utilizados para teste."
-                + "Todos com os devidos direitos autorais permitidos.");
-            menu();
-        }
+        
         if(value == 2){
             List<String> som = new ArrayList<String>();
             som.add("+");
@@ -486,38 +465,64 @@ public class Main
             }
             menu();
         }
-        /*if(value == 0){
-            if(pausar == true){
-                pausar = false;
-                setPausar(false);
-            }
-        }*/
+        
+        if(value == 3){
+            CalculaRecordes(0);
+            Object[] rc = recordes.toArray();
+            JOptionPane.showOptionDialog(
+                    null,
+                    "Ranking:\n ",
+                    "",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    rc, recordes.get(0));
+            
+        }
+        if(value == 4){
+            JOptionPane.showMessageDialog(null,
+                  "Teclas de Comando:"
+                + "W - Atirar\n"
+                + "A - Andar para a esquerda\n"
+                + "D - Andar para a direita\n"                
+                + "P - Pausar\n"
+                + "Objetivo:"
+                + "Não deixar nenhum bloco cair no chão, senão o jogo acaba."
+                + "Ganha quem sobreviver mais tempo.");   
+            menu();
+        }
+        if(value == 5){
+            JOptionPane.showMessageDialog(null,
+                  "https://github.com/JamalBR/ProjetoCG2");
+            menu();
+            
+        }
+        if(value == 6){
+            JOptionPane.showMessageDialog(null,
+                  "Referências:\n"
+                + "Todas as imagens e áudios utilizados no projeto são do JMonkey e utilizados para teste."
+                + "Todos com os devidos direitos autorais permitidos.");
+            menu();
+        }
+        if(value == 7){
+            JOptionPane.showMessageDialog(null,
+                   "Otto survival é um jogo desenvolvido para a disciplina de Computação Gráfica II,\n"
+                   + "do curso Engenharia da Computação, ministrada pelo professor doutor Glauco Todesco\n"
+                   + "na Faculdade de Engenharia de Sorocaba(FACENS).\n"
+                   + "Autores: \n"
+                   + "Giovanni Garcia Ribeiro de Souza - 140872\n"
+                   + "Maurício Luís de Lorenzi - 141269");
+            menu();
+            
+        }
         
         if(value == 8){
             System.exit(0);
         }
         
-        if(value == 1){
-            List<String> dif = new ArrayList<String>();
-            dif.add("Easy");
-            dif.add("Medium");
-            dif.add("Hard");
-            Object[] Ops = dif.toArray();
-            int opDif;
-            opDif = JOptionPane.showOptionDialog(
-                    null,
-                    "Qual dificuldade?\n ",
-                    "Opções:",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    Ops,
-                    dif.get(0));
-                  
-        }
     }
     //metodo que pausa o jogo
-    /*public void setPausar(boolean y) {
+    public void setPausar(boolean y) {
         if (y) {
             pausar = true;
             inputManager.removeListener(this);
@@ -528,7 +533,7 @@ public class Main
             inputManager.addListener(this, "CharLeft", "CharRight");
             inputManager.addListener(this, "Disparo", "CharBackward");
         }
-    }*/
+    }
     
     private void createTimer()
     {
