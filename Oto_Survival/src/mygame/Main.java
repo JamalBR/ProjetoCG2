@@ -83,7 +83,10 @@ public class Main
     AudioNode somTiro;    
     public ArrayList<Integer> recordes = new ArrayList<Integer>();
     private int volume,placar=0;
-    int qtdCubo=0;
+    private int qtdCubo=0, vida=3;
+    //dificuldade é o tempo em segundos entre cada vez que aparece 1 cubo
+    // 2 = fácil  1 = médio  0.5 = difícil
+    private float dificuldade = 2;
     long onstartTime, timeElapsed, auxTime=0;
     private final ActionListener pauseActionListener;
     private final AnalogListener pauseAnalogListener;
@@ -94,7 +97,7 @@ public class Main
             this.pauseAnalogListener = new AnalogListener() {
             @Override
             public void onAnalog(String name, float value, float tpf) {
-                if (isRunning) {
+                if (!isRunning) {
                     if(pausar == false)
                     {
                         menu();
@@ -153,10 +156,12 @@ public class Main
         if(!pausar)
         {
             missingShoot();
+            boxHitGround();
             timeElapsed = ((new Date()).getTime() - onstartTime) / 1000;
             createTimer();
             createPlacar();
-            if(timeElapsed%4 == 0 && qtdCubo < 5){
+            createVida();
+            if(timeElapsed%dificuldade == 0 && qtdCubo < 1){
                 auxTime = timeElapsed;
                 createRandomPosCube();
                 qtdCubo++;
@@ -168,8 +173,8 @@ public class Main
         
         
         if (reinicia) {
-            //setar posicao inicial do personagem
-            //CalculaRecordes(placar);
+            //reinicia o jogo
+            CalculaRecordes(timeElapsed);
             placar = 0;
             onstartTime = System.currentTimeMillis();
             timeElapsed = 0;
@@ -177,29 +182,6 @@ public class Main
             reinicia = false;
         }
         player.upDateKeys(tpf, up, down, left, right);
-       
-        //precisa alterar (frescurinha)
-        if (!isRunning) {
-            /*guiNode.detachAllChildren();
-            guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
-            BitmapText helloText = new BitmapText(guiFont, false);
-            helloText.setSize(guiFont.getCharSet().getRenderedSize());
-            helloText.setColor(ColorRGBA.Black);
-            helloText.setText("PAUSE");
-            helloText.setLocalTranslation(300, helloText.getLineHeight(), 0);
-            guiNode.attachChild(helloText);*/
-            //setPausar(true);
-        } else {
-            //guiNode.detachAllChildren();
-            //setPausar(false);
-            /*guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
-            BitmapText text = new BitmapText(guiFont, false);
-            text.setSize(guiFont.getCharSet().getRenderedSize());
-            text.setColor(ColorRGBA.Black);
-            text.setText("Placar: "/* + placar);
-            text.setLocalTranslation(30, text.getLineHeight() + 445, 0);
-            guiNode.attachChild(text);*/
-        }
         somTiro.setVolume(volume);
     }
 
@@ -209,11 +191,9 @@ public class Main
     }
 
     private void createPlayer() {
-
         player = new PlayerCamera("player", assetManager, bulletAppState, cam);
         rootNode.attachChild(player);
         flyCam.setEnabled(false);
-
     }
 
     @Override
@@ -234,11 +214,10 @@ public class Main
                 }
                 break;
         }
-        if (binding.equals("Disparo")) {
+        if (binding.equals("Disparo") && value) {
             createTiro();
             somTiro.playInstance();
-        }
-            
+        } 
     }
 
     private void createLigth() {
@@ -270,7 +249,6 @@ public class Main
         camNode.setLocalTranslation(new Vector3f(-30, -4.5f,0));
         camNode.lookAt(rootNode.getLocalTranslation(), Vector3f.UNIT_Y);
         
-        
         rootNode.attachChild(camNode);
     }
 
@@ -286,7 +264,7 @@ public class Main
         boxGeo.setLocalTranslation(x,y,z);
         rootNode.attachChild(boxGeo);
         
-        RigidBodyControl boxPhysicsNode = new RigidBodyControl(1f);
+        RigidBodyControl boxPhysicsNode = new RigidBodyControl(0.5f);
         boxGeo.addControl(boxPhysicsNode);
         bulletAppState.getPhysicsSpace().add(boxPhysicsNode);
         Random gR = new Random();
@@ -309,7 +287,6 @@ public class Main
     private void createRandomPosCube(){
         double rnd = Math.random();
         rnd = (rnd*3) - 1;
-        
         createCubo(-25, -1, (float) rnd);
     }
     
@@ -319,7 +296,7 @@ public class Main
         Material tiro_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         tiro_mat.setColor("Color", ColorRGBA.Red);
         tiro.setMaterial(tiro_mat);
-        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.3f),(player.getLocalTranslation().z)/0.6f);
+        tiro.setLocalTranslation((player.getLocalTranslation().x -25),(player.getLocalTranslation().y + 0.1f),(player.getLocalTranslation().z)/0.6f);
         rootNode.attachChild(tiro);
         
         RigidBodyControl tiroPhysicsNode = new RigidBodyControl(1);
@@ -339,10 +316,10 @@ public class Main
         bulletAppState.getPhysicsSpace().add(cityPhysicsNode);
     }
     
-    void missingShoot(){
+    private void missingShoot(){
          Spatial tiro = rootNode.getChild("Tiro");
          if (tiro != null) {
-            if (tiro.getLocalTranslation().y > -1.5f) {
+            if (tiro.getLocalTranslation().y > -0.8f) {
                 int index = rootNode.getChildIndex(tiro);
                 rootNode.detachChildAt(index);
                 bulletAppState.getPhysicsSpace().removeAll(tiro);
@@ -350,7 +327,19 @@ public class Main
         }
     }
     
-    void removeHitedBox(Spatial hited){
+    private void boxHitGround(){
+        Spatial box = rootNode.getChild("Box");
+         if (box != null) {
+            if (box.getLocalTranslation().y < -5) {
+                int index = rootNode.getChildIndex(box);
+                rootNode.detachChildAt(index);
+                bulletAppState.getPhysicsSpace().removeAll(box);
+                vida-=1;
+            }
+        }
+    }
+    
+    private void removeHitedBox(Spatial hited){
         int index = rootNode.getChildIndex(hited);
         rootNode.detachChildAt(index);
         bulletAppState.getPhysicsSpace().removeAll(hited);
@@ -360,7 +349,7 @@ public class Main
     private void initKeys() {
         inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("Disparo", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Disparo", new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping("CharBackward", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
 
@@ -452,7 +441,15 @@ public class Main
                     null,
                     Ops,
                     dif.get(0));
-                  
+            if(opDif == 0){
+                dificuldade = 2;
+            }
+            if(opDif == 1){
+                dificuldade = 1;
+            }
+            if(opDif == 2){
+                dificuldade = 0.5f;
+            }
         }
         
         if(value == 2){
@@ -571,6 +568,7 @@ public class Main
         timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.95f, 0);
         guiNode.attachChild(timeText);
     }
+    
     private void createPlacar()
     {
         guiNode.detachChildNamed("Placar");       
@@ -582,8 +580,20 @@ public class Main
         timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.90f, 0);
         guiNode.attachChild(timeText);
     }
+    
+    private void createVida()
+    {
+        guiNode.detachChildNamed("Vida");       
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText timeText = new BitmapText(guiFont, false);
+        timeText.setName("Vida");
+        timeText.setSize(guiFont.getCharSet().getRenderedSize());
+        timeText.setText("Vida: " +  vida);
+        timeText.setLocalTranslation(this.settings.getWidth() * 0.1f, this.settings.getHeight() * 0.85f, 0);
+        guiNode.attachChild(timeText);
+    }
 
-    private void CalculaRecordes(int i) {
+    private void CalculaRecordes(long i) {
         
     }
 }
